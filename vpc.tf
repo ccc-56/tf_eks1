@@ -24,10 +24,10 @@ module "vpc" {
   version = "3.2.0"
 
   name                 = "education-vpc"
-  cidr                 = "10.86.0.0/16"
+  cidr                 = "10.98.0.0/16"
   azs                  = data.aws_availability_zones.available.names
-  private_subnets      = ["10.86.1.0/24", "10.86.2.0/24", "10.86.3.0/24"]
-  public_subnets       = ["10.86.4.0/24", "10.86.5.0/24", "10.86.6.0/24"]
+  private_subnets      = ["10.98.1.0/24", "10.98.2.0/24", "10.98.3.0/24"]
+  public_subnets       = ["10.98.4.0/24", "10.98.5.0/24", "10.98.6.0/24"]
   enable_nat_gateway   = true
   single_nat_gateway   = true
   enable_dns_hostnames = true

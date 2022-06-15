@@ -1,32 +1,62 @@
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
-  version         = "17.24.0"
+  version         = "18.23.0"
   cluster_name    = local.cluster_name
   cluster_version = "1.20"
-  subnets         = module.vpc.private_subnets
+  subnet_ids = module.vpc.private_subnets
 
   vpc_id = module.vpc.vpc_id
 
-  workers_group_defaults = {
-    root_volume_type = "gp2"
+
+  # Fargate Profile(s)
+
+  # EKS Managed Node Group(s)
+  eks_managed_node_group_defaults = {
+    disk_size      = 45
+    instance_types = ["c5.large", "c6a.large"]
+    block_device_mappings = {
+      xvda = {
+        device_name = "/dev/xvda"
+        ebs         = {
+          volume_size           = 32
+          volume_type           = "gp3"
+          iops                  = 3000
+          throughput            = 125
+          encrypted             = true
+          delete_on_termination = true
+        }
+      }
+    }
   }
 
-  worker_groups = [
-    {
-      name                          = "worker-group-1"
-      instance_type                 = "t2.small"
-      additional_userdata           = "echo foo bar"
-      additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
-      asg_desired_capacity          = 2
-    },
-    {
-      name                          = "worker-group-2"
-      instance_type                 = "t2.medium"
-      additional_userdata           = "echo foo bar"
-      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
-      asg_desired_capacity          = 1
-    },
-  ]
+  eks_managed_node_groups = {
+    fppp = {
+      min_size     = 1
+      max_size     = 3
+      desired_size = 1
+      disk_size      = 62
+
+      instance_types = ["t3.small"]
+      capacity_type = "SPOT"
+    }
+    green = {
+      min_size     = 1
+      max_size     = 3
+      desired_size = 1
+
+      instance_types = ["t3.small"]
+      capacity_type  = "SPOT"
+    }
+    whi = {
+      min_size     = 1
+      max_size     = 3
+      desired_size = 1
+
+      instance_types = ["t3.small"]
+      disk_size = 37
+    }
+  }
+
 }
 
 data "aws_eks_cluster" "cluster" {
